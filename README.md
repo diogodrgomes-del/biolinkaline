@@ -72,7 +72,27 @@ os pendentes embaixo do medidor de tamanho, enquanto sobrar algum:
 - **Instagram** — `@alinececcotti` foi chute a partir do nome; confirme.
 - **Google Maps** — está uma busca pelo nome. Se ela tiver ficha no Google
   Meu Negócio, o link curto de lá fica melhor.
-- **Fotos** — retrato do topo, antes/depois e galeria, todos vazios.
+- **Retrato do topo** — ainda vazio. É o único que falta: enquanto não
+  vier, o topo da página fica no gradiente. Tem de ser uma foto **dela**,
+  não de resultado.
+
+## As fotos que já estão
+
+Três antes/depois de **luz pulsada para remoção de marcas de acne**,
+fornecidos pela cliente já montados (as duas metades e o letreiro vêm
+queimados na imagem).
+
+- **Galeria** — as três inteiras, em 4:5. É a proporção exata dos originais
+  (1122×1402), então nada foi cortado: letreiro e marca d'água intactos.
+- **Slider antes/depois** — a terceira foto, partida ao meio na emenda
+  (x=561) e recortada na mesma janela nos dois lados, no enquadramento da
+  bochecha. Ela foi escolhida por ter a acne mais severa **e** o melhor
+  alinhamento entre as metades: orelha, nariz e boca caem no mesmo ponto,
+  então o divisor desliza sem a imagem "pular".
+
+Nenhum filtro foi aplicado. O editor avisa, com razão, que tratar só um
+lado de um antes/depois é propaganda enganosa — e num resultado de
+procedimento, tratar os dois também engana.
 
 Fora isso: o `<title>` e a `<meta name="description">` não citam cidade,
 porque essa informação não veio. Vale acrescentar — é o que faz a página

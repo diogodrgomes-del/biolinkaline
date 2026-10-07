@@ -89,9 +89,22 @@ for sel in ("#retrato", ".ba", ".selo", "h1", ".funcao", ".lema",
     else:
         erros.append(f"ALVO {sel}: nao achei no HTML")
 
+print("\n── fotos ──")
+# o editor exporta WebP (JPEG so onde o navegador nao sabe gravar WebP)
+n_faixa = len(re.findall(r'id="f(?:Antes|Depois)"\s+src="data:image/(?:webp|jpeg)', h))
+n_obras = len(re.findall(r"arquivo: 'data:image/(?:webp|jpeg)", h))
+if n_faixa == 2: ok += 1; print("  ok  antes e depois preenchidos")
+else: erros.append(f"FOTO faixa: {n_faixa} de 2 preenchidas")
+if n_obras >= 1: ok += 1; print(f"  ok  galeria com {n_obras} foto(s)")
+else: erros.append("FOTO galeria vazia")
+
+# acima disso o celular demora para abrir e o editor ja avisa
+kb = len(h.encode("utf-8")) / 1024
+if kb <= 2600: ok += 1; print(f"  ok  pagina com {kb:,.0f} KB (teto 2.600)")
+else: erros.append(f"FOTO pagina com {kb:,.0f} KB, acima do teto de 2.600")
+
 print("\n── higiene ──")
-for proibido in ("Franciele", "franciele", "data:image/webp", "data:image/jpeg",
-                 "--ouro", "#d9b86e", "217,184,110"):
+for proibido in ("Franciele", "franciele", "--ouro", "#d9b86e", "217,184,110"):
     if proibido in h:
         erros.append(f"HIG  sobrou {proibido!r} na pagina")
     else:
