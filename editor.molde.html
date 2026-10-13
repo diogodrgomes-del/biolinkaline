@@ -94,6 +94,17 @@ textarea{resize:vertical;min-height:52px}
 .estilo[aria-pressed=true] span{background:var(--folha);color:#251b17;font-weight:700}
 input[type=range]{width:100%;accent-color:var(--rose)}
 
+.pasta-linha{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.pasta-linha input{flex:1;min-width:0}
+.pasta-linha .conta{font-size:10px;color:var(--fraco);white-space:nowrap}
+.pasta-linha button{
+  flex:none;width:26px;height:26px;padding:0;cursor:pointer;
+  border:1px solid var(--linha);border-radius:6px;
+  background:#1a1718;color:var(--fraco);font:700 13px/1 system-ui;
+}
+.pasta-linha button:hover{border-color:#e5836f;color:#e5836f}
+.pasta-linha button:disabled{opacity:.35;cursor:not-allowed}
+
 .medida{font-size:11.5px;color:var(--fraco);line-height:1.7;text-align:center}
 .medida b{color:var(--texto)}
 .medida .pesado{color:#e5b06f}
@@ -127,10 +138,10 @@ dialog.escrever .linha{display:flex;gap:8px;margin-top:12px;justify-content:flex
         Clique <b>na própria página</b> ao lado. Toda foto e todo texto editável
         fica com contorno rosé. Foto abre o seletor de arquivo; texto abre
         uma caixinha para escrever.<br><br>
-        A tira mostra as <b>3 primeiras</b> fotos; todas aparecem quando o
-        visitante toca em “Clique e veja nossos resultados”. Aqui no editor a
-        tira mostra a lista inteira, para você conseguir mexer em todas — as
-        que só aparecem nos resultados ficam marcadas.<br><br>
+        A tira mostra as <b>3 primeiras</b> fotos. Em “Clique e veja nossos
+        resultados” o visitante vê as <b>pastas</b>, e entra numa delas para
+        ver as fotos. Aqui no editor a tira mostra a lista inteira, e cada
+        miniatura traz embaixo a pasta a que pertence.<br><br>
         Terminou? <b>Baixar index.html</b> e suba esse arquivo. Ele vai
         sozinho: não precisa de mais nada na pasta.
       </p>
@@ -145,6 +156,17 @@ dialog.escrever .linha{display:flex;gap:8px;margin-top:12px;justify-content:flex
       </label>
       <p class="nota">Vale para todas as fotos. Antes e depois recebem o mesmo
       tratamento — filtrar só um lado seria propaganda enganosa.</p>
+    </div>
+
+    <div class="cartao">
+      <h2>Pastas dos resultados</h2>
+      <div id="listaPastas"></div>
+      <button type="button" class="acao" id="somarPasta" style="width:100%">+ nova pasta</button>
+      <p class="nota">Cada foto da galeria escolhe a pasta dela na etiqueta
+      embaixo da miniatura. Pasta sem foto nenhuma não aparece para o
+      visitante.<br><br>
+      Renomear é seguro. O endereço da pasta (<code>#resultados-acne</code>)
+      não muda junto, de propósito: link já divulgado continua abrindo.</p>
     </div>
 
     <div class="cartao">
@@ -256,7 +278,7 @@ const estado = {
   // reprocessar quando o estilo mudar sem perder qualidade
   fotos: { retrato:novaFoto(), antes:novaFoto(), depois:novaFoto(),
            mini1:novaFoto(), mini2:novaFoto() },
-  obras: [],
+  obras: [], pastas: [],
   textos: {},
   links: {}, pixel: '',
   estilo: 'quente', intensidade: 1
@@ -302,19 +324,30 @@ function novaFoto(){ return { img:null, giro:0, enq:50, dados:'' }; }
   estado.fotos.antes.dados  = pega(/id="fAntes"\s+src="(data:image[^"]*)"/);
   estado.fotos.depois.dados = pega(/id="fDepois"\s+src="(data:image[^"]*)"/);
   estado.fotos.retrato.dados = pega(/--retrato: url\("(data:image[^"]*)"\)/);
+  /* as pastas da tela de resultados */
+  const blocoP = (h.match(/var PASTAS = \[([\s\S]*?)\n  \];/)||['',''])[1];
+  estado.pastas = [...blocoP.matchAll(
+      /\{\s*id:\s*'([^']*)'\s*,\s*nome:\s*(?:"([^"]*)"|'([^']*)')/g)].map(m =>
+    ({ id: m[1], nome: desescapar(m[2] !== undefined ? m[2] : (m[3] || '')) }));
+  if(!estado.pastas.length) estado.pastas = [{ id:'geral', nome:'Resultados' }];
+
   // a galeria começa com o que ja existe no modelo
   const lista = (h.match(/var TRABALHOS = \[([\s\S]*?)\n  \];/)||['',''])[1];
   /* le o titulo E a foto que ja esta embutida. Ler so o titulo fazia a
      exportacao reescrever a lista com arquivo vazio, apagando as fotos
      que o arquivo ja tinha. */
+  /* a pasta entra como opcional: um index.html gerado antes das pastas
+     existirem continua abrindo, e as fotos dele caem na primeira pasta */
   estado.obras = [...lista.matchAll(
-      /\{\s*arquivo:\s*'([^']*)'\s*,\s*titulo:\s*(?:"([^"]*)"|'([^']*)')/g)].map(m=>{
+      /\{\s*arquivo:\s*'([^']*)'\s*,\s*titulo:\s*(?:"([^"]*)"|'([^']*)')(?:\s*,\s*pasta:\s*'([^']*)')?/g)].map(m=>{
     const f = novaFoto();
     f.dados  = m[1] || '';
-    f.titulo = m[2] !== undefined ? m[2] : (m[3] || '');
+    f.titulo = desescapar(m[2] !== undefined ? m[2] : (m[3] || ''));
+    f.pasta  = m[4] || estado.pastas[0].id;
     return f;
   });
-  if(!estado.obras.length) estado.obras = [Object.assign(novaFoto(),{titulo:''})];
+  if(!estado.obras.length)
+    estado.obras = [Object.assign(novaFoto(),{titulo:'',pasta:estado.pastas[0].id})];
 })();
 
 /* ═════════ o que da para editar em cada pagina ═════════ */
@@ -396,8 +429,19 @@ function gerarHome(){
   const a = dados('antes','faixa'), d = dados('depois','faixa');
   if(a) h = h.replace(/(id="fAntes"\s+src=")[^"]*/, '$1'+a);
   if(d) h = h.replace(/(id="fDepois"\s+src=")[^"]*/, '$1'+d);
+  /* JSON.stringify nao escapa "<", entao um titulo contendo a tag de
+     fechamento de script fecharia o bloco e levaria o resto da pagina
+     junto. (Escrito assim de proposito: a sequencia literal aqui no
+     comentario fecharia ESTE script — o leitor de HTML nao sabe que
+     esta dentro de um comentario.) */
+  const comoTexto = t => JSON.stringify(String(t||'')).replace(/</g,'\\u003C');
+  const linhasP = estado.pastas.map(pa =>
+    "    { id: '"+pa.id+"', nome: "+comoTexto(pa.nome)+' }');
+  h = h.replace(/var PASTAS = \[[\s\S]*?\n  \];/,
+                'var PASTAS = [\n'+linhasP.join(',\n')+'\n  ];');
   const linhas = estado.obras.map(o =>
-    "    { arquivo: '"+dados(o,'obra')+"', titulo: "+JSON.stringify(o.titulo||'')+' }');
+    "    { arquivo: '"+dados(o,'obra')+"', titulo: "+comoTexto(o.titulo)
+    +", pasta: '"+(o.pasta||estado.pastas[0].id)+"' }");
   h = h.replace(/var TRABALHOS = \[[\s\S]*?\n  \];/,
                 'var TRABALHOS = [\n'+linhas.join(',\n')+'\n  ];');
   h = porId(h,'btZap',linkZap());
@@ -447,7 +491,14 @@ const ESTILO_EDICAO = `
   .ed-somar:hover{background:rgba(224,168,143,.16)}
   .grade li{display:block!important}
   .ed-somar{display:flex!important}
-  .ed-marca{position:absolute;left:0;right:0;bottom:0;z-index:98;
+  /* o seletor fica por cima do alvo de clique (z 99), senao o toque
+     nele abriria o seletor de arquivo em vez de trocar a pasta */
+  .ed-pasta{position:absolute;left:3px;right:3px;bottom:3px;z-index:101;
+    border:0;border-radius:4px;padding:3px 2px;cursor:pointer;
+    font:600 8.5px/1.2 ui-sans-serif,system-ui,sans-serif;
+    background:rgba(10,8,8,.88);color:#f4eeea}
+  /* a marca subiu para o topo: embaixo e do seletor agora */
+  .ed-marca{position:absolute;left:0;right:0;top:0;z-index:98;
     padding:2px 0;text-align:center;font-size:7px;letter-spacing:.08em;
     text-transform:uppercase;color:#f4eeea;background:rgba(12,9,9,.66)}
 `;
@@ -511,6 +562,25 @@ function equiparObras(doc){
       li.appendChild(marca);
     }
     alvo(doc, li, 'Trocar foto', null, () => trocarObra(i));
+
+    /* a que pasta esta foto pertence */
+    const sel = doc.createElement('select');
+    sel.className = 'ed-pasta';
+    estado.pastas.forEach(pa => {
+      const op = doc.createElement('option');
+      op.value = pa.id;
+      op.textContent = pa.nome || '(sem nome)';
+      sel.appendChild(op);
+    });
+    sel.value = obra.pasta || estado.pastas[0].id;
+    ['click','pointerdown','mousedown'].forEach(ev =>
+      sel.addEventListener(ev, e => e.stopPropagation()));
+    sel.addEventListener('change', e => {
+      e.stopPropagation();
+      estado.obras[i].pasta = sel.value;
+      agendar();
+    });
+    li.appendChild(sel);
     const x = doc.createElement('button');
     x.type='button'; x.className='ed-remover'; x.textContent='×'; x.title='remover';
     x.addEventListener('click', ev => {
@@ -525,7 +595,7 @@ function equiparObras(doc){
     mais.className='ed-somar'; mais.textContent='+';
     mais.style.aspectRatio = '1/1';
     mais.addEventListener('click', async () => {
-      const f = novaFoto(); f.titulo = '';
+      const f = novaFoto(); f.titulo = ''; f.pasta = estado.pastas[0].id;
       estado.obras.push(f);
       await trocarObra(estado.obras.length-1);
     });
@@ -658,6 +728,62 @@ function conferirPixel(){
 }
 conferirPixel();
 
+/* ── pastas ── */
+const caixaPastas = document.getElementById('listaPastas');
+
+/* id vem do nome, mas so no nascimento: renomear depois nao mexe nele,
+   senao um link ja divulgado pararia de abrir */
+function virarId(nome){
+  const base = (nome||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,24);
+  let id = base || 'pasta', n = 2;
+  while(estado.pastas.some(p => p.id === id)) id = (base||'pasta')+'-'+(n++);
+  return id;
+}
+function pintarPastas(){
+  caixaPastas.innerHTML = '';
+  estado.pastas.forEach((pa, i) => {
+    const linha = document.createElement('div');
+    linha.className = 'pasta-linha';
+
+    const campo = document.createElement('input');
+    campo.type = 'text'; campo.value = pa.nome;
+    campo.setAttribute('aria-label', 'Nome da pasta');
+    campo.addEventListener('input', () => { pa.nome = campo.value; agendar(); });
+
+    const quantas = estado.obras.filter(o => o.pasta === pa.id).length;
+    const conta = document.createElement('span');
+    conta.className = 'conta';
+    conta.textContent = quantas ? quantas + (quantas > 1 ? ' fotos' : ' foto') : 'vazia';
+
+    const x = document.createElement('button');
+    x.type = 'button'; x.textContent = '×';
+    x.title = 'remover a pasta';
+    x.disabled = estado.pastas.length < 2;   // sem pasta nenhuma nao da
+    x.addEventListener('click', () => {
+      /* as fotos dela nao somem: vao para a primeira pasta que sobrar */
+      const sobra = estado.pastas.filter(o => o.id !== pa.id)[0];
+      if(quantas && !confirm(
+        'Remover "'+(pa.nome||'sem nome')+'"? As '+quantas+' foto(s) dela vao para "'
+        +(sobra.nome||'sem nome')+'".')) return;
+      estado.obras.forEach(o => { if(o.pasta === pa.id) o.pasta = sobra.id; });
+      estado.pastas.splice(i, 1);
+      pintarPastas(); agendar();
+    });
+
+    linha.append(campo, conta, x);
+    caixaPastas.appendChild(linha);
+  });
+}
+document.getElementById('somarPasta').addEventListener('click', () => {
+  escrever('Nome da nova pasta', '', v => {
+    const nome = (v||'').trim();
+    if(!nome) return;
+    estado.pastas.push({ id: virarId(nome), nome });
+    pintarPastas(); agendar();
+  });
+});
+
 /* ── montar e baixar ── */
 const medida = document.getElementById('medida');
 function agendar(){
@@ -685,6 +811,11 @@ function pendencias(){
   if(numeroZap() === '5543999999999')    p.push('o WhatsApp');
   if(!estado.fotos.retrato.dados && !estado.fotos.retrato.img) p.push('o retrato do topo');
   if(!estado.obras.some(o=>o.dados||o.img)) p.push('as fotos da galeria');
+  /* pasta vazia some da tela de resultados: melhor saber antes de publicar */
+  const vazias = estado.pastas
+    .filter(pa => !estado.obras.some(o => o.pasta === pa.id))
+    .map(pa => '“'+(pa.nome||'sem nome')+'”');
+  if(vazias.length) p.push('foto em '+vazias.join(' e ')+' (pasta vazia não aparece)');
   return p.length
     ? '<br><span class="pesado">falta preencher: '+p.join(', ')+'</span>'
     : '';
@@ -700,6 +831,7 @@ document.getElementById('baixarHome').addEventListener('click',()=>feito.home&&b
 
 
 pintarAmostras();
+pintarPastas();
 agendar();
 </script>
 </body>

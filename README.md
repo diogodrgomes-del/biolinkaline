@@ -72,9 +72,38 @@ os pendentes embaixo do medidor de tamanho, enquanto sobrar algum:
 - **Instagram** — `@alinececcotti` foi chute a partir do nome; confirme.
 - **Google Maps** — está uma busca pelo nome. Se ela tiver ficha no Google
   Meu Negócio, o link curto de lá fica melhor.
+- **Foto de verruga** — a pasta "Remoção de Verrugas" está vazia, então
+  não aparece no site. O editor avisa enquanto estiver assim.
 - **Retrato do topo** — ainda vazio. É o único que falta: enquanto não
   vier, o topo da página fica no gradiente. Tem de ser uma foto **dela**,
   não de resultado.
+
+## Pastas dos resultados
+
+"Clique e veja nossos resultados" abre um **índice de pastas**; tocar numa
+pasta mostra as fotos dela. São duas:
+
+| id | nome | fotos |
+|---|---|---|
+| `acne` | Manchas de acne | 3 |
+| `verrugas` | Remoção de Verrugas | 0 |
+
+**Pasta vazia não aparece para o visitante.** Hoje só "Manchas de acne"
+está no ar; "Remoção de Verrugas" existe na estrutura e no editor, e
+entra sozinha assim que a primeira foto for posta nela.
+
+O endereço de cada nível é o que faz o botão voltar do celular andar de
+pasta → índice → home em vez de sair do site de uma vez:
+
+- `#resultados` → o índice
+- `#resultados-acne` → dentro da pasta
+
+**O `id` não muda quando você renomeia a pasta**, de propósito: um link já
+divulgado continua abrindo. Trocar o `id` à mão quebra esses links.
+
+No editor: cada miniatura tem a pasta numa etiqueta embaixo, e o cartão
+"Pastas dos resultados" renomeia, cria e remove. Remover uma pasta **não
+apaga foto**: as dela vão para a primeira pasta que sobrar.
 
 ## As fotos que já estão
 

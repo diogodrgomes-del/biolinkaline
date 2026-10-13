@@ -89,6 +89,24 @@ for sel in ("#retrato", ".ba", ".selo", "h1", ".funcao", ".lema",
     else:
         erros.append(f"ALVO {sel}: nao achei no HTML")
 
+print("\n── pastas ──")
+le("pastas", r"var PASTAS = \[([\s\S]*?)\n  \];")
+escreve("PASTAS", r"var PASTAS = \[[\s\S]*?\n  \];")
+
+ids = re.findall(r"\{\s*id:\s*'([^']*)'\s*,\s*nome:\s*(?:\"[^\"]*\"|'[^']*')", h)
+if ids: ok += 1; print(f"  ok  {len(ids)} pasta(s): {', '.join(ids)}")
+else:   erros.append("PASTA nenhuma pasta legivel")
+
+# toda foto tem de apontar para uma pasta QUE EXISTE: uma orfa nao
+# aparece em pasta nenhuma e some do site sem dar erro
+usadas = re.findall(r"arquivo: '[^']*', titulo: (?:\"[^\"]*\"|'[^']*'), pasta: '([^']*)'", h)
+n_tr = len(re.findall(r"\{ arquivo: '", h))
+if len(usadas) == n_tr: ok += 1; print(f"  ok  as {n_tr} fotos declaram pasta")
+else: erros.append(f"PASTA {n_tr - len(usadas)} foto(s) sem pasta")
+orfas = sorted({u for u in usadas if u not in ids})
+if orfas: erros.append(f"PASTA foto(s) apontando para pasta inexistente: {orfas}")
+else: ok += 1; print("  ok  nenhuma foto órfã")
+
 print("\n── fotos ──")
 # o editor exporta WebP (JPEG so onde o navegador nao sabe gravar WebP)
 n_faixa = len(re.findall(r'id="f(?:Antes|Depois)"\s+src="data:image/(?:webp|jpeg)', h))
