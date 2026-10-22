@@ -1,13 +1,16 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+
+  "framework": null,
+  "installCommand": "echo 'nada a instalar: o site nao tem dependencia de execucao'",
+  "buildCommand": "echo 'nada a construir: index.html ja vai pronto'",
+  "outputDirectory": ".",
+
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
-        }
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
       ]
     }
   ]
