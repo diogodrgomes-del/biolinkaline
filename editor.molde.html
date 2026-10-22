@@ -324,11 +324,27 @@ function novaFoto(){ return { img:null, giro:0, enq:50, dados:'' }; }
   estado.fotos.antes.dados  = pega(/id="fAntes"\s+src="(data:image[^"]*)"/);
   estado.fotos.depois.dados = pega(/id="fDepois"\s+src="(data:image[^"]*)"/);
   estado.fotos.retrato.dados = pega(/--retrato: url\("(data:image[^"]*)"\)/);
+  /* PASTAS e TRABALHOS sao JavaScript, nao HTML: os textos deles sao
+     literais escritos por JSON.stringify. Um "([^"]*)" para na primeira
+     aspa ESCAPADA, devolve o pedaco com a barra pendurada, e a
+     exportacao seguinte escapa a barra — a cada volta o nome encolhe e
+     ganha uma barra. Por isso casar o literal inteiro e desfazer com
+     JSON.parse, que e o inverso exato de quem escreveu. */
+  const LITERAL = '"(?:[^"\\\\]|\\\\.)*"' + "|'(?:[^'\\\\]|\\\\.)*'";
+  function lerTexto(lit){
+    if(!lit) return '';
+    try{
+      if(lit[0] === '"') return JSON.parse(lit);
+      return JSON.parse('"' + lit.slice(1,-1)
+        .replace(/\\'/g, "'").replace(/"/g, '\\"') + '"');
+    }catch(e){ return lit.slice(1,-1); }
+  }
+
   /* as pastas da tela de resultados */
   const blocoP = (h.match(/var PASTAS = \[([\s\S]*?)\n  \];/)||['',''])[1];
   estado.pastas = [...blocoP.matchAll(
-      /\{\s*id:\s*'([^']*)'\s*,\s*nome:\s*(?:"([^"]*)"|'([^']*)')/g)].map(m =>
-    ({ id: m[1], nome: desescapar(m[2] !== undefined ? m[2] : (m[3] || '')) }));
+      new RegExp("\\{\\s*id:\\s*'([^']*)'\\s*,\\s*nome:\\s*(" + LITERAL + ")", 'g'))]
+    .map(m => ({ id: m[1], nome: lerTexto(m[2]) }));
   if(!estado.pastas.length) estado.pastas = [{ id:'geral', nome:'Resultados' }];
 
   // a galeria começa com o que ja existe no modelo
@@ -338,12 +354,13 @@ function novaFoto(){ return { img:null, giro:0, enq:50, dados:'' }; }
      que o arquivo ja tinha. */
   /* a pasta entra como opcional: um index.html gerado antes das pastas
      existirem continua abrindo, e as fotos dele caem na primeira pasta */
-  estado.obras = [...lista.matchAll(
-      /\{\s*arquivo:\s*'([^']*)'\s*,\s*titulo:\s*(?:"([^"]*)"|'([^']*)')(?:\s*,\s*pasta:\s*'([^']*)')?/g)].map(m=>{
+  estado.obras = [...lista.matchAll(new RegExp(
+      "\\{\\s*arquivo:\\s*'([^']*)'\\s*,\\s*titulo:\\s*(" + LITERAL +
+      ")(?:\\s*,\\s*pasta:\\s*'([^']*)')?", 'g'))].map(m=>{
     const f = novaFoto();
     f.dados  = m[1] || '';
-    f.titulo = desescapar(m[2] !== undefined ? m[2] : (m[3] || ''));
-    f.pasta  = m[4] || estado.pastas[0].id;
+    f.titulo = lerTexto(m[2]);
+    f.pasta  = m[3] || estado.pastas[0].id;
     return f;
   });
   if(!estado.obras.length)

@@ -33,9 +33,23 @@ vazio, e a exportação seguinte apaga o conteúdo que não conseguiu ler. Por
 isso, depois de editar `index.html` à mão:
 
 ```sh
-python3 testes/contratos.py   # 49 contratos: leitura, escrita e alvos de clique
-python3 build.py              # reembute a página no editor
+npm test          # contratos + navegação + editor
+python3 build.py  # reembute a página no editor
 ```
+
+São três:
+
+| Teste | Precisa de | Cobre |
+|---|---|---|
+| `testes/contratos.py` | nada (só python3) | os 55 pontos de marcação que o editor lê e reescreve, mais a invariante de foto órfã |
+| `testes/navegacao.mjs` | node + playwright | índice, pastas, botão voltar do site e do aparelho, link direto, pasta inexistente |
+| `testes/editor.mjs` | node + playwright | ida e volta: exporta, reabre a partir do exportado, confere que nada encolheu |
+
+O `npm test` roda os três. Sem node, `python3 testes/contratos.py` já
+pega a classe de erro mais perigosa.
+
+Os dois de navegador tiram o esperado do próprio `index.html`, então não
+envelhecem quando você acrescenta foto ou pasta.
 
 Mudou o `editor.molde.html`? Só `build.py`.
 
@@ -72,8 +86,6 @@ os pendentes embaixo do medidor de tamanho, enquanto sobrar algum:
 - **Instagram** — `@alinececcotti` foi chute a partir do nome; confirme.
 - **Google Maps** — está uma busca pelo nome. Se ela tiver ficha no Google
   Meu Negócio, o link curto de lá fica melhor.
-- **Foto de verruga** — a pasta "Remoção de Verrugas" está vazia, então
-  não aparece no site. O editor avisa enquanto estiver assim.
 - **Retrato do topo** — ainda vazio. É o único que falta: enquanto não
   vier, o topo da página fica no gradiente. Tem de ser uma foto **dela**,
   não de resultado.
@@ -86,11 +98,10 @@ pasta mostra as fotos dela. São duas:
 | id | nome | fotos |
 |---|---|---|
 | `acne` | Manchas de acne | 3 |
-| `verrugas` | Remoção de Verrugas | 0 |
+| `verrugas` | Remoção de Verrugas | 3 |
 
-**Pasta vazia não aparece para o visitante.** Hoje só "Manchas de acne"
-está no ar; "Remoção de Verrugas" existe na estrutura e no editor, e
-entra sozinha assim que a primeira foto for posta nela.
+**Pasta vazia não aparece para o visitante** — fica na estrutura e no
+editor, e entra sozinha quando receber a primeira foto.
 
 O endereço de cada nível é o que faz o botão voltar do celular andar de
 pasta → índice → home em vez de sair do site de uma vez:

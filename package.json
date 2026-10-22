@@ -1,0 +1,10 @@
+{
+  "name": "biolinkaline",
+  "private": true,
+  "description": "Landing page e editor visual de Aline Ceccotti",
+  "scripts": {
+    "test": "python3 testes/contratos.py && node testes/navegacao.mjs && node testes/editor.mjs",
+    "build": "python3 build.py"
+  },
+  "devDependencies": { "playwright": "^1.49.0" }
+}
