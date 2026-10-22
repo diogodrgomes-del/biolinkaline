@@ -39,7 +39,12 @@ print("── lerModelo ──")
 le("nome",    r"<h1>([^<]*)</h1>", "Aline Ceccotti")
 le("funcao",  r'<p class="funcao">\s*<span class="fio"></span>([^<]*)<span', "Estética Facial Avançada")
 le("lema",    r'<p class="lema">([^<]*)</p>', "Beleza com ciência")
-le("numero",  r'<span class="num">([^<]*)</span>', "+___")
+le("numero",  r'<span class="num">([^<]*)</span>')
+# o numero e conteudo, nao marcador: o teste confere que da para ler e
+# que nao ficou o "+___" de fabrica, sem fixar qual numero e
+_num = re.search(r'<span class="num">([^<]*)</span>', h).group(1)
+if "_" in _num: erros.append(f"NUM ainda esta o marcador de fabrica: {_num!r}")
+else: ok += 1; print(f"  ok  numero preenchido ({_num!r}, nao e marcador)")
 le("legenda", r'<span class="txt">([^<]*)</span>', "atendimentos realizados")
 le("rodape",  r'<p class="rodape entra" style="--d:800">([^<]*)', "Cuidar da pele é cuidar de você.")
 le("chamada", r'<a class="titulo chamada"[^>]*>\s*([^<]*)', "Clique e veja nossos resultados")

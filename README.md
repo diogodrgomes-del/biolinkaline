@@ -80,8 +80,6 @@ gradiente (`#b57a62`) ele já está em 4,75:1, e 4,5:1 é o piso do WCAG AA.
 A página está no ar com valores de partida em quatro campos. O editor lista
 os pendentes embaixo do medidor de tamanho, enquanto sobrar algum:
 
-- **`+___` na legenda** — o número de atendimentos. Inventar métrica de
-  cliente não dá, então ficou um marcador que você não consegue ignorar.
 - **WhatsApp** — está em `5543999999999`, que é reserva, não o número dela.
 - **Instagram** — `@alinececcotti` foi chute a partir do nome; confirme.
 - **Google Maps** — está uma busca pelo nome. Se ela tiver ficha no Google
@@ -125,8 +123,13 @@ queimados na imagem).
 - **Galeria** — as três inteiras, em 4:5. É a proporção exata dos originais
   (1122×1402), então nada foi cortado: letreiro e marca d'água intactos.
 - **Slider antes/depois** — a terceira foto, partida ao meio na emenda
-  (x=561) e recortada na mesma janela nos dois lados, no enquadramento da
-  bochecha. Ela foi escolhida por ter a acne mais severa **e** o melhor
+  (x=561) e recortada na mesma janela nos dois lados, fechado na bochecha.
+  O enquadramento foi medido, não escolhido no olho: a diferença entre as
+  duas metades se concentra em 50-80% da largura do quadro original, e o
+  terço esquerdo era orelha e mandíbula — pele que o tratamento não
+  tocou. Com o divisor repousando em 46%, era justamente essa parte que
+  aparecia como "antes", e o antes/depois não se lia. A janela foi
+  fechada em volta da área tratada. Ela foi escolhida por ter a acne mais severa **e** o melhor
   alinhamento entre as metades: orelha, nariz e boca caem no mesmo ponto,
   então o divisor desliza sem a imagem "pular".
 
@@ -137,6 +140,17 @@ procedimento, tratar os dois também engana.
 Fora isso: o `<title>` e a `<meta name="description">` não citam cidade,
 porque essa informação não veio. Vale acrescentar — é o que faz a página
 aparecer em busca local.
+
+## Hospedagem
+
+`vercel.json` manda `Cache-Control: max-age=0, must-revalidate` em tudo.
+O site é um arquivo só, então não há sub-recurso para versionar: sem
+isso, o HTML fica preso no cache do navegador e do CDN e uma publicação
+nova demora a aparecer. Com `must-revalidate` o navegador ainda guarda,
+mas pergunta antes de usar — se nada mudou vem um 304, sem rebaixar nada.
+
+Na Vercel o projeto é estático: Framework Preset **Other**, Build Command
+e Output Directory vazios.
 
 ## Contraste
 
