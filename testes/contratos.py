@@ -38,7 +38,7 @@ def escreve(nome, padrao, vezes=1):
 print("── lerModelo ──")
 le("nome",    r"<h1>([^<]*)</h1>", "Aline Ceccotti")
 le("funcao",  r'<p class="funcao">\s*<span class="fio"></span>([^<]*)<span', "Estética Facial Avançada")
-le("lema",    r'<p class="lema">([^<]*)</p>', "Beleza com ciência")
+le("lema",    r'<p class="lema">([^<]*)</p>')   # pode estar vazio de proposito
 le("numero",  r'<span class="num">([^<]*)</span>')
 # o numero e conteudo, nao marcador: o teste confere que da para ler e
 # que nao ficou o "+___" de fabrica, sem fixar qual numero e
@@ -49,7 +49,12 @@ le("legenda", r'<span class="txt">([^<]*)</span>', "atendimentos realizados")
 le("rodape",  r'<p class="rodape entra" style="--d:800">([^<]*)', "Cuidar da pele é cuidar de você.")
 le("chamada", r'<a class="titulo chamada"[^>]*>\s*([^<]*)', "Clique e veja nossos resultados")
 le("selo",    r"</svg>([^<]*)</p>", "Protocolos personalizados")
-le("zap",     r'id="btZap"\s+href="https://wa\.me/(\d+)', "5543999999999")
+le("zap",     r'id="btZap"\s+href="https://wa\.me/(\d+)')
+# o numero e conteudo: confere o formato e que nao ficou o de reserva
+_zap = re.search(r'id="btZap"\s+href="https://wa\.me/(\d+)', h).group(1)
+if _zap == "5543999999999": erros.append("ZAP ainda esta o numero de reserva")
+elif not (12 <= len(_zap) <= 13): erros.append(f"ZAP {_zap} tem {len(_zap)} digitos; o certo e 12 ou 13")
+else: ok += 1; print(f"  ok  whatsapp real ({_zap}, {len(_zap)} digitos)")
 le("msg",     r'id="btZap"\s+href="https://wa\.me/\d+\?text=([^"]*)"')
 le("insta",   r'id="btInsta"\s+href="https://www\.instagram\.com/([^/"]*)', "alinececcotti")
 le("maps",    r'id="btMaps"\s+href="([^"]*)"')

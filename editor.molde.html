@@ -496,6 +496,15 @@ const ESTILO_EDICAO = `
     text-transform:uppercase;color:#251b17;background:#f0cdb9;
     padding:4px 7px;border-radius:99px;opacity:0;transition:opacity .18s}
   .ed-alvo:hover::after,.ed-alvo:focus-visible::after{opacity:1}
+  /* Campo de texto esvaziado some da pagina publicada, de proposito.
+     Mas AQUI ele precisa continuar existindo: sem isto nao haveria onde
+     clicar para escrever de novo, e esvaziar um campo seria caminho sem
+     volta.  A marca vem do JS, nao de :empty — o proprio editor mete o
+     botao dentro do elemento, e com um filho ele deixa de ser :empty. */
+  .ed-vazio{
+    display:block!important;min-height:1.15em;min-width:7em;
+    margin-inline:auto;border-radius:.3em;
+    background:rgba(224,168,143,.09)}
   .ed-remover{position:absolute;top:4px;right:4px;z-index:100;
     width:20px;height:20px;border:0;border-radius:50%;cursor:pointer;
     background:rgba(10,9,9,.85);color:#fff;font:700 12px/1 system-ui;padding:0}
@@ -555,6 +564,7 @@ function equiparHome(doc){
     if(a.tipo === 'foto'){
       alvo(doc, el, a.rotulo, a.posicao, () => trocarFoto(a.chave, a.alvo, a.rotulo));
     } else {
+      if(!el.textContent.trim()) el.classList.add('ed-vazio');
       alvo(doc, el, a.rotulo, {inset:'-4px'}, () => escrever(a.rotulo, estado.textos[a.chave],
         v => { estado.textos[a.chave] = v; agendar(); }));
     }
