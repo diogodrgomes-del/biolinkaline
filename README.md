@@ -97,6 +97,7 @@ pasta mostra as fotos dela. São duas:
 |---|---|---|
 | `acne` | Manchas de acne | 3 |
 | `verrugas` | Remoção de Verrugas | 3 |
+| `labial` | Preenchimento labial | 0 |
 
 **Pasta vazia não aparece para o visitante** — fica na estrutura e no
 editor, e entra sozinha quando receber a primeira foto.
