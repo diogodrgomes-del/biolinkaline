@@ -97,7 +97,7 @@ pasta mostra as fotos dela. São duas:
 |---|---|---|
 | `acne` | Manchas de acne | 3 |
 | `verrugas` | Remoção de Verrugas | 3 |
-| `labial` | Preenchimento labial | 0 |
+| `labial` | Preenchimento labial | 2 |
 
 **Pasta vazia não aparece para o visitante** — fica na estrutura e no
 editor, e entra sozinha quando receber a primeira foto.
@@ -121,7 +121,13 @@ Três antes/depois de **luz pulsada para remoção de marcas de acne**,
 fornecidos pela cliente já montados (as duas metades e o letreiro vêm
 queimados na imagem).
 
-- **Galeria** — as três inteiras, em 4:5. É a proporção exata dos originais
+- **Proporção** — o slot é 4:5. As de acne e verruga vieram 1122x1402,
+  4:5 exato, e entram inteiras. As de lábio vieram **3:4** (1086x1448):
+  cortar para 4:5 tiraria 45px de cima e de baixo e comeria o letreiro,
+  então elas entram ajustadas pela altura, com a própria cor da moldura
+  completando a largura. Como a arte já tem moldura creme, a emenda não
+  aparece.
+- **Galeria** — as de acne e verruga inteiras, em 4:5. É a proporção exata dos originais
   (1122×1402), então nada foi cortado: letreiro e marca d'água intactos.
 - **Slider antes/depois** — a terceira foto, partida ao meio na emenda
   (x=561) e recortada na mesma janela nos dois lados, fechado na bochecha.
